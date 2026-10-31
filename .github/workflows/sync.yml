@@ -31,10 +31,26 @@ jobs:
         # 它会在同步的同时，保持你本地的 Actions 配置不被篡改
         test_mode: false
 
-    # 第三步：强制将拉取到的新 Tags 推送到你的仓库（确保 Releases 完美同步）
+    # 3. 回复自己的 workflows 目录
+    - name: Restore Own Workflows Directory
+      if: always()
+      run: |
+        # 将工作流目录重置回同步前的状态
+        git checkout HEAD -- .github/workflows/
+        # 如果上游新增了工作流文件，需要将其删除
+        git clean -fd .github/workflows/
+        # 检查是否有待提交的变更（通常不会有，除非你本地也有修改）
+        if ! git diff --quiet HEAD -- .github/workflows/; then
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git commit -am "chore: restore local workflows after upstream sync"
+          git push origin HEAD:${{ github.ref }}
+        fi
+
+    # 第四步：强制将拉取到的新 Tags 推送到你的仓库（确保 Releases 完美同步）
     - name: Sync and Push Tags
       run: |
         UPSTREAM="morluto/rea"
-        git remote add upstream_tags "https://github.com{UPSTREAM}.git" || true
+        git remote add upstream_tags "https://github.com/${UPSTREAM}.git" || true
         git fetch upstream_tags --tags
         git push origin --tags --force
