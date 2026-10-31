@@ -34,6 +34,7 @@ jobs:
     # 第三步：强制将拉取到的新 Tags 推送到你的仓库（确保 Releases 完美同步）
     - name: Sync and Push Tags
       run: |
-        git remote add upstream_tags https://github.com || true
+        UPSTREAM="morluto/rea"
+        git remote add upstream_tags "https://github.com{UPSTREAM}.git" || true
         git fetch upstream_tags --tags
         git push origin --tags --force
